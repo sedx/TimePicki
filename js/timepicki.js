@@ -34,8 +34,6 @@
 			        if (mini < 10)
 			            mini = "0" + mini;
 
-			        mini = Math.min(Math.max(parseInt(mini), 0), 59);
-
 					return tim + ":" + mini;
 				}
 			},
@@ -326,32 +324,34 @@
 
 			function set_value(event, close) {
 				// use input values to set the time
-				var tim = ele_next.find(".ti_tx input").val();
-				var mini = ele_next.find(".mi_tx input").val();
-				var meri = "";
-				if(settings.show_meridian){
-					meri = ele_next.find(".mer_tx input").val();
-				}
-				
-				if (tim.length !== 0 && mini.length !== 0 && (!settings.show_meridian || meri.length !== 0)) {
-					// store the value so we can set the initial value
-					// next time the picker is opened
-					ele.attr('data-timepicki-tim', tim);
-					ele.attr('data-timepicki-mini', mini);
-					
-					if(settings.show_meridian){
-						ele.attr('data-timepicki-meri', meri);
-						// set the formatted value
-						ele.val(settings.format_output(tim, mini, meri));
-					}else{
-						ele.val(settings.format_output(tim, mini));
-					}
-				}
+				if (ele.data('time-chaged')) {
+                    var tim = ele_next.find(".ti_tx input").val();
+                    var mini = ele_next.find(".mi_tx input").val();
+                    var meri = "";
+                    if (settings.show_meridian) {
+                        meri = ele_next.find(".mer_tx input").val();
+                    }
 
-				//Call user on_change callback function if set
-				if (settings.on_change !== null) {
-					settings.on_change(ele[0]);
-				}
+                    if (tim.length !== 0 && mini.length !== 0 && (!settings.show_meridian || meri.length !== 0)) {
+                        // store the value so we can set the initial value
+                        // next time the picker is opened
+                        ele.attr('data-timepicki-tim', tim);
+                        ele.attr('data-timepicki-mini', mini);
+
+                        if (settings.show_meridian) {
+                            ele.attr('data-timepicki-meri', meri);
+                            // set the formatted value
+                            ele.val(settings.format_output(tim, mini, meri));
+                        } else {
+                            ele.val(settings.format_output(tim, mini));
+                        }
+                    }
+
+                    //Call user on_change callback function if set
+                    if (settings.on_change !== null) {
+                        settings.on_change(ele[0]);
+                    }
+                }
 
 				if (close) {
 					close_timepicki();
@@ -359,7 +359,11 @@
 			}
 
 			function open_timepicki() {
-				set_date(settings.start_time);
+				if (ele.val()) {
+					set_date(ele.val())
+                }else{
+					set_date(settings.start_time);
+				}
 				ele_next.fadeIn();
 				// focus on the first input and select its contents
 				var first_input = ele_next.find('input:visible').first();
@@ -400,7 +404,10 @@
 						mer = start_time[2];
 					}
 				// default is we will use the current time
-				} else {
+				} else if (start_time) {
+					ti = parseInt(start_time.split(':')[0],10)
+					mi = parseInt(start_time.split(':')[1],10)
+                }else {
 					d = new Date();
 					ti = d.getHours();
 					mi = d.getMinutes();
@@ -476,6 +483,7 @@
 						ele_next.find("." + cur_cli + " .ti_tx input").val(cur_time);
 					}
 				}
+				ele.data('time-chaged', true)
 			}
 
 			function change_mins(cur_ele, direction) {
@@ -513,6 +521,7 @@
 						}
 					}
 				}
+				ele.data('time-chaged', true)
 			}
 
 			function change_meri(cur_ele, direction) {
@@ -534,6 +543,7 @@
 						ele_next.find("." + cur_cli + " .mer_tx input").val("AM");
 					}
 				}
+				ele.data('time-chaged', true)
 			}
 
 			// handle clicking on the arrow icons
